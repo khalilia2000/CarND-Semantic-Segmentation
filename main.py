@@ -177,8 +177,8 @@ def run():
     runs_dir = './runs'
     tests.test_for_kitti_dataset(data_dir)
     # controls- added by AK
-    num_epochs = 1
-    batch_size = 32
+    num_epochs = 10
+    batch_size = 64
     
 
     # Download pretrained vgg model
