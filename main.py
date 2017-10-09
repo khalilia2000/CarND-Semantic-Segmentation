@@ -24,7 +24,7 @@ def load_vgg(sess, vgg_path):
     :param vgg_path: Path to vgg folder, containing "variables/" and "saved_model.pb"
     :return: Tuple of Tensors from VGG model (image_input, keep_prob, layer3_out, layer4_out, layer7_out)
     """
-    # TODO: Implement function
+    # Done: Implement function
     #   Use tf.saved_model.loader.load to load the model and weights
     vgg_tag = 'vgg16'
     vgg_input_tensor_name = 'image_input:0'
@@ -33,7 +33,19 @@ def load_vgg(sess, vgg_path):
     vgg_layer4_out_tensor_name = 'layer4_out:0'
     vgg_layer7_out_tensor_name = 'layer7_out:0'
     
-    return None, None, None, None, None
+    # load the model
+    tf.saved_model.loader.load(sess, [vgg_tag], vgg_path)
+    graph = tf.get_default_graph()
+    input_w = graph.get_tensor_by_name(vgg_input_tensor_name)
+    keep_prob = graph.get_tensor_by_name(vgg_keep_prob_tensor_name)
+    l3_ow = graph.get_tensor_by_name(vgg_layer3_out_tensor_name)
+    l4_ow = graph.get_tensor_by_name(vgg_layer4_out_tensor_name)
+    l7_ow = graph.get_tensor_by_name(vgg_layer7_out_tensor_name)
+    
+    # return the result tuple
+    return input_w, keep_prob, l3_ow, l4_ow, l7_ow
+
+
 tests.test_load_vgg(load_vgg, tf)
 
 
@@ -46,8 +58,39 @@ def layers(vgg_layer3_out, vgg_layer4_out, vgg_layer7_out, num_classes):
     :param num_classes: Number of classes to classify
     :return: The Tensor for the last layer of output
     """
-    # TODO: Implement function
-    return None
+    # Done: Implement function
+    
+    # implement conv1x1 on layers 3, 4 and 7 to preserve spatial data
+    conv1x1_layer7 = tf.layers.conv2d(vgg_layer7_out, num_classes, 1, strides=(1,1), 
+                                      padding='same', kernel_regularizer=tf.contrib.layers.l2_regularizer(1e-3))
+    
+    conv1x1_layer4 = tf.layers.conv2d_transpose(vgg_layer4_out, num_classes, 1, strides=(1,1), 
+                                      padding='same', kernel_regularizer=tf.contrib.layers.l2_regularizer(1e-3))
+    
+    conv1x1_layer3 = tf.layers.conv2d_transpose(vgg_layer3_out, num_classes, 1, strides=(1,1), 
+                                      padding='same', kernel_regularizer=tf.contrib.layers.l2_regularizer(1e-3))
+    
+
+    # create 2xvgg_layer7_out by upsampling using stride of 2
+    out7x2 = tf.layers.conv2d_transpose(conv1x1_layer7, num_classes, 4, strides=(2, 2), 
+                                        padding='same', kernel_regularizer=tf.contrib.layers.l2_regularizer(1e-3))
+    
+    # add upsampled layer 7 to layer 4
+    out74 = tf.add(out7x2, conv1x1_layer4)
+    
+    # create 2xout74 by upsmpling using stride of 2
+    out74x2 = tf.layers.conv2d_transpose(out74, num_classes, 4, strides=(2, 2), 
+                                         padding='same', kernel_regularizer=tf.contrib.layers.l2_regularizer(1e-3))
+    
+    # add upsampled comgined layers 7 and 4 to layer 3
+    out743 = tf.add(out74x2, conv1x1_layer3)
+    
+    # create 8xout743 by upsampling using stride 8
+    out743x8 = tf.layers.conv2d_transpose(out743, num_classes, 16, strides=(8, 8), 
+                                          padding='same', kernel_regularizer=tf.contrib.layers.l2_regularizer(1e-3))
+    
+    return out743x8
+
 tests.test_layers(layers)
 
 
@@ -61,6 +104,7 @@ def optimize(nn_last_layer, correct_label, learning_rate, num_classes):
     :return: Tuple of (logits, train_op, cross_entropy_loss)
     """
     # TODO: Implement function
+    
     return None, None, None
 tests.test_optimize(optimize)
 
