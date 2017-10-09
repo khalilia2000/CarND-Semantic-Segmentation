@@ -63,32 +63,44 @@ def layers(vgg_layer3_out, vgg_layer4_out, vgg_layer7_out, num_classes):
     
     # implement conv1x1 on layers 3, 4 and 7 to preserve spatial data
     conv1x1_layer7 = tf.layers.conv2d(vgg_layer7_out, num_classes, 1, strides=(1,1), 
-                                      padding='same', kernel_regularizer=tf.contrib.layers.l2_regularizer(1e-3))
+                                      padding='same', 
+                                      kernel_initializer=tf.truncated_normal_initializer(stddev=0.01), 
+                                      kernel_regularizer=tf.contrib.layers.l2_regularizer(1e-3))
     
     conv1x1_layer4 = tf.layers.conv2d_transpose(vgg_layer4_out, num_classes, 1, strides=(1,1), 
-                                      padding='same', kernel_regularizer=tf.contrib.layers.l2_regularizer(1e-3))
+                                      padding='same', 
+                                      kernel_initializer=tf.truncated_normal_initializer(stddev=0.01), 
+                                      kernel_regularizer=tf.contrib.layers.l2_regularizer(1e-3))
     
     conv1x1_layer3 = tf.layers.conv2d_transpose(vgg_layer3_out, num_classes, 1, strides=(1,1), 
-                                      padding='same', kernel_regularizer=tf.contrib.layers.l2_regularizer(1e-3))
+                                      padding='same', 
+                                      kernel_initializer=tf.truncated_normal_initializer(stddev=0.01), 
+                                      kernel_regularizer=tf.contrib.layers.l2_regularizer(1e-3))
     
 
     # create 2xvgg_layer7_out by upsampling using stride of 2
     out7x2 = tf.layers.conv2d_transpose(conv1x1_layer7, num_classes, 4, strides=(2, 2), 
-                                        padding='same', kernel_regularizer=tf.contrib.layers.l2_regularizer(1e-3))
+                                        padding='same', 
+                                        kernel_initializer=tf.truncated_normal_initializer(stddev=0.01), 
+                                        kernel_regularizer=tf.contrib.layers.l2_regularizer(1e-3))
     
     # add upsampled layer 7 to layer 4
     out74 = tf.add(out7x2, conv1x1_layer4)
     
     # create 2xout74 by upsmpling using stride of 2
     out74x2 = tf.layers.conv2d_transpose(out74, num_classes, 4, strides=(2, 2), 
-                                         padding='same', kernel_regularizer=tf.contrib.layers.l2_regularizer(1e-3))
+                                         padding='same', 
+                                         kernel_initializer=tf.truncated_normal_initializer(stddev=0.01), 
+                                         kernel_regularizer=tf.contrib.layers.l2_regularizer(1e-3))
     
     # add upsampled comgined layers 7 and 4 to layer 3
     out743 = tf.add(out74x2, conv1x1_layer3)
     
     # create 8xout743 by upsampling using stride 8
     out743x8 = tf.layers.conv2d_transpose(out743, num_classes, 16, strides=(8, 8), 
-                                          padding='same', kernel_regularizer=tf.contrib.layers.l2_regularizer(1e-3))
+                                          padding='same', 
+                                          kernel_initializer=tf.truncated_normal_initializer(stddev=0.01), 
+                                          kernel_regularizer=tf.contrib.layers.l2_regularizer(1e-3))
     
     return out743x8
 
@@ -108,10 +120,11 @@ def optimize(nn_last_layer, correct_label, learning_rate, num_classes):
     
     # reshape output from 4D to 2D
     logits = tf.reshape(nn_last_layer, (-1, num_classes))
+    labels = tf.reshape(correct_label, (-1, num_classes))
     
     # calculate cross entropy loss
     cross_entropy_loss = tf.reduce_mean(
-            tf.nn.softmax_cross_entropy_with_logits(logits=logits, labels=correct_label))
+            tf.nn.softmax_cross_entropy_with_logits(logits=logits, labels=labels))
     
     # setup adam optimizer for minimizing training loss
     opt = tf.train.AdamOptimizer(learning_rate=learning_rate)
@@ -154,12 +167,12 @@ def train_nn(sess, epochs, batch_size, get_batches_fn, train_op, cross_entropy_l
             feed = {input_image: images,
                     correct_label: labels,
                     keep_prob: 0.5,
-                    learning_rate: 0.001}
+                    learning_rate: 0.0005}
             
             _, loss = sess.run([train_op, cross_entropy_loss], feed_dict=feed)
             
 
-        print("Epoch: {} - loss: {} - training time: {}".format(i+1, loss, time.time()-t0))
+        print("Epoch: {} - loss: {:.3f} - training time: {:.1f}".format(i+1, loss, time.time()-t0))
     
     pass
 
@@ -177,7 +190,7 @@ def run():
     runs_dir = './runs'
     tests.test_for_kitti_dataset(data_dir)
     # controls- added by AK
-    num_epochs = 10
+    num_epochs = 5
     batch_size = 64
     
 
