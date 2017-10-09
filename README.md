@@ -1,6 +1,6 @@
 # Semantic Segmentation
 ### Introduction
-This is one of the projects in Udacity Self-Drivign Car Nanodegree. In this project, pixels of a road in images are classified using a Fully Convolutional Network (FCN).
+This is one of the projects in Udacity Self-Driving Car Nanodegree. In this project, pixels of a road in images are classified using a Fully Convolutional Network (FCN). The FCN architecture is explained in this [paper](https://people.eecs.berkeley.edu/~jonlong/long_shelhamer_fcn.pdf). 
 
 ### Setup
 ##### Frameworks and Packages
@@ -14,7 +14,7 @@ Make sure you have the following is installed:
 
 ### Rubric
 #### Building the Network
-1. Does the project load the pretrained vgg model?
+1. Does the project load the pre-trained vgg model?
 `load_vgg()` function is implemented in lines 21 to 47 of `main.py`, and loads the vgg model correctly. 
 
 2. Does the project learn the correct features from the images?
@@ -24,11 +24,11 @@ Make sure you have the following is installed:
 `optimize()` function is implemented in lines 110 to 133 of `main.py`, and returns `train_op`, `logits`, and `cross_entropy_loss`, which are used for optimizing the network.
 
 4. Does the project train the neural network?
-`train_nn()` function is implemened in lines 138 to 177 of `main.py`, and is used for training the network.
+`train_nn()` function is implemented in lines 138 to 177 of `main.py`, and is used for training the network.
 
 #### Training the Network
 5. Does the project train the model correctly?
-I trained the model for 5 epochs using a learning rate of 0.0005 (on CPU). L2 regularization as well as dropout was used to avoid over-fitting. Below is the results of the training:
+I trained the model for 5 epochs using a learning rate of 0.0005 (on CPU). L2 regularization as well as dropout was used to avoid over-fitting. Below are the results of the training:
 ```
 
 Epoch: 1 - loss: 0.733 - training time: 1477.5
@@ -39,10 +39,9 @@ Epoch: 5 - loss: 0.196 - training time: 1490.0
 
 ```
 
-6. Does the project use reasonable hyperparameters?
+6. Does the project use reasonable hyper-parameters?
 training was performed for 5 epochs, using a batch_size of 64, and a learning rate of 0.0005 along with keep_prob of 0.5
 
 7. Does the project correctly label the road?
-pictures from the latest run are included in the run folder. with more pochs and augmented training data I am sure the results can be improved. 
+pictures from the latest run are included in the run folder. with more epochs and augmented training data I am sure the results can be improved. 
  
-
