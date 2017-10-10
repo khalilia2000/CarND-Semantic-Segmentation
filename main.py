@@ -128,7 +128,7 @@ def optimize(nn_last_layer, correct_label, learning_rate, num_classes):
 
     # calculate total loss includig regulization loss
     reg_losses = tf.get_collection(tf.GraphKeys.REGULARIZATION_LOSSES)
-    reg_constant = 0.01  
+    reg_constant = 1.0  
     total_loss = cross_entropy_loss + reg_constant * sum(reg_losses)
     
     # setup adam optimizer for minimizing training loss
@@ -172,7 +172,7 @@ def train_nn(sess, epochs, batch_size, get_batches_fn, train_op, cross_entropy_l
             feed = {input_image: images,
                     correct_label: labels,
                     keep_prob: 0.5,
-                    learning_rate: 0.0005}
+                    learning_rate: 0.0003}
             
             _, loss = sess.run([train_op, cross_entropy_loss], feed_dict=feed)
             
@@ -195,8 +195,8 @@ def run():
     runs_dir = './runs'
     tests.test_for_kitti_dataset(data_dir)
     # controls- added by AK
-    num_epochs = 2
-    batch_size = 64
+    num_epochs = 30
+    batch_size = 4
     
 
     # Download pretrained vgg model
@@ -223,11 +223,11 @@ def run():
         fcnn_out = layers(l3_out, l4_out, l7_out, num_classes)
         logits, train_op, cross_entropy_loss = optimize(fcnn_out, correct_label, learning_rate, num_classes)
 
-        # TODO: Train NN using the train_nn function
+        # Done: Train NN using the train_nn function
         train_nn(sess, num_epochs, batch_size, get_batches_fn, train_op, cross_entropy_loss, input_image,
              correct_label, keep_prob, learning_rate)
 
-        # TODO: Save inference data using helper.save_inference_samples
+        # Done: Save inference data using helper.save_inference_samples
         helper.save_inference_samples(runs_dir, data_dir, sess, image_shape, logits, keep_prob, input_image)
 
         # OPTIONAL: Apply the trained model to a video
