@@ -125,10 +125,15 @@ def optimize(nn_last_layer, correct_label, learning_rate, num_classes):
     # calculate cross entropy loss
     cross_entropy_loss = tf.reduce_mean(
             tf.nn.softmax_cross_entropy_with_logits(logits=logits, labels=labels))
+
+    # calculate total loss includig regulization loss
+    reg_losses = tf.get_collection(tf.GraphKeys.REGULARIZATION_LOSSES)
+    reg_constant = 0.01  
+    total_loss = cross_entropy_loss + reg_constant * sum(reg_losses)
     
     # setup adam optimizer for minimizing training loss
     opt = tf.train.AdamOptimizer(learning_rate=learning_rate)
-    train_op = opt.minimize(cross_entropy_loss)
+    train_op = opt.minimize(total_loss)
     
     return logits, train_op, cross_entropy_loss
 
@@ -190,7 +195,7 @@ def run():
     runs_dir = './runs'
     tests.test_for_kitti_dataset(data_dir)
     # controls- added by AK
-    num_epochs = 5
+    num_epochs = 2
     batch_size = 64
     
 
